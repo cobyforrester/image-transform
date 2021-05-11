@@ -1,0 +1,14 @@
+scalar Image
+
+input ImageInstructions {
+  image: Image!
+  tint: Boolean
+}
+
+type Query {
+  image: Image!
+}
+
+type Mutation {
+  transformImage(input: ImageInstructions): Image
+}
