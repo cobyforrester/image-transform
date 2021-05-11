@@ -7,9 +7,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cobyforrester/serve-example/graph/generated"
-	"github.com/cobyforrester/serve-example/graph/model"
-	scalars "github.com/cobyforrester/serve-example/schema"
+	"github.com/cobyforrester/image-transform/graph/generated"
+	"github.com/cobyforrester/image-transform/graph/model"
+	scalars "github.com/cobyforrester/image-transform/schema"
 )
 
 func (r *mutationResolver) TransformImage(ctx context.Context, input *model.ImageInstructions) (*scalars.Image, error) {

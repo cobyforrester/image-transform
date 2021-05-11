@@ -12,8 +12,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/cobyforrester/serve-example/graph/model"
-	scalars "github.com/cobyforrester/serve-example/schema"
+	"github.com/cobyforrester/image-transform/graph/model"
+	scalars "github.com/cobyforrester/image-transform/schema"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )

@@ -3,7 +3,7 @@
 package model
 
 import (
-	scalars "github.com/cobyforrester/serve-example/schema"
+	scalars "github.com/cobyforrester/image-transform/schema"
 )
 
 type ImageInstructions struct {
