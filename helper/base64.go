@@ -49,3 +49,19 @@ func ImageToB64(image image.Image) (string, error) {
 
 	return base64Encoding, nil
 }
+
+func B64ToImageConfig(s string) (image.Config, error) {
+	s = s[strings.Index(s, ",")+1:] // removes: data:image/png;base64,
+	unbased, err := b64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic("Cannot decode b64")
+		// return nil, err
+	}
+	r := bytes.NewReader(unbased)
+	im, _, err := image.DecodeConfig(r)
+	if err != nil {
+		panic("Bad PNG")
+		// return nil, err
+	}
+	return im, nil
+}

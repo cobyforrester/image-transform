@@ -21,12 +21,18 @@ func (r *mutationResolver) TransformImage(ctx context.Context, input model.Image
 }
 
 func (r *mutationResolver) TransformJSONImage(ctx context.Context, input model.ImageJSONInput) (string, error) {
-	image, err := helper.B64ToImage(input.Image.Base64)
+	img, err := helper.B64ToImage(input.Image.Base64)
 	if err != nil {
 		return "", err
 	}
+	// conf, err := helper.B64ToImageConfig(input.Image.Base64)
+	if err != nil {
+		return "", err
+	}
+	// img, _ = helper.Scale(img, conf, 2)
+	img, _ = helper.Blur(img, 1.5)
 
-	encodedStr, err := helper.ImageToB64(image)
+	encodedStr, err := helper.ImageToB64(img)
 	if err != nil {
 		return "", err
 	}
