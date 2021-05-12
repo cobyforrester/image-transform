@@ -30,7 +30,8 @@ func (r *mutationResolver) TransformJSONImage(ctx context.Context, input model.I
 		return "", err
 	}
 	// img, _ = helper.Scale(img, conf, 2)
-	img, _ = helper.Blur(img, 1.5)
+	img, _ = helper.Rotate(img, 70)
+	img, _ = helper.GrayScale(img)
 
 	encodedStr, err := helper.ImageToB64(img)
 	if err != nil {

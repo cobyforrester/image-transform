@@ -7,6 +7,8 @@ import (
 	"image/png"
 	"net/http"
 	"strings"
+
+	"github.com/disintegration/imaging"
 )
 
 func B64ToImage(s string) (image.Image, error) {
@@ -18,7 +20,7 @@ func B64ToImage(s string) (image.Image, error) {
 	}
 
 	r := bytes.NewReader(unbased)
-	im, err := png.Decode(r)
+	im, err := imaging.Decode(r)
 	if err != nil {
 		// panic("Bad PNG")
 		return nil, err

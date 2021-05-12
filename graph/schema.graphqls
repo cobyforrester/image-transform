@@ -6,11 +6,14 @@ type Query {
 
 input ImageJSON {
   base64: String!
-  type: String!
   options: ImageOptions!
 }
 input ImageOptions {
-  tint: Boolean
+  blur: Int64
+  scale: Int64
+  grayscale: Boolean
+  invert: Boolean
+  rotate: Int64
 }
 
 input ImageInstructions {
