@@ -1,8 +1,12 @@
 scalar Image
-scalar Int64
 
 type Query {
   image: Image!
+}
+
+input ImageInstructions {
+  image: Image!
+  tint: Boolean
 }
 
 input ImageJSON {
@@ -10,16 +14,11 @@ input ImageJSON {
   options: ImageOptions!
 }
 input ImageOptions {
-  blur: Int64
-  scale: Int64
+  blur: Float
+  scale: Float
   grayscale: Boolean
   invert: Boolean
-  rotate: Int64
-}
-
-input ImageInstructions {
-  image: Image!
-  tint: Boolean
+  rotate: Float
 }
 
 input ImageJSONInput {

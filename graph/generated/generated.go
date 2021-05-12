@@ -173,10 +173,14 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `scalar Image
-scalar Int64
 
 type Query {
   image: Image!
+}
+
+input ImageInstructions {
+  image: Image!
+  tint: Boolean
 }
 
 input ImageJSON {
@@ -184,16 +188,11 @@ input ImageJSON {
   options: ImageOptions!
 }
 input ImageOptions {
-  blur: Int64
-  scale: Int64
+  blur: Float
+  scale: Float
   grayscale: Boolean
   invert: Boolean
-  rotate: Int64
-}
-
-input ImageInstructions {
-  image: Image!
-  tint: Boolean
+  rotate: Float
 }
 
 input ImageJSONInput {
@@ -1657,7 +1656,7 @@ func (ec *executionContext) unmarshalInputImageOptions(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("blur"))
-			it.Blur, err = ec.unmarshalOInt642ᚖstring(ctx, v)
+			it.Blur, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1665,7 +1664,7 @@ func (ec *executionContext) unmarshalInputImageOptions(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scale"))
-			it.Scale, err = ec.unmarshalOInt642ᚖstring(ctx, v)
+			it.Scale, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1689,7 +1688,7 @@ func (ec *executionContext) unmarshalInputImageOptions(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rotate"))
-			it.Rotate, err = ec.unmarshalOInt642ᚖstring(ctx, v)
+			it.Rotate, err = ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2361,19 +2360,19 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOInt642ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := graphql.UnmarshalString(v)
+	res, err := graphql.UnmarshalFloat(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOInt642ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return graphql.MarshalString(*v)
+	return graphql.MarshalFloat(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

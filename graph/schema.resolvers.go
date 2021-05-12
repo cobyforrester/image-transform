@@ -25,7 +25,7 @@ func (r *mutationResolver) TransformJSONImage(ctx context.Context, input model.I
 	if err != nil {
 		return "", err
 	}
-	// conf, err := helper.B64ToImageConfig(input.Image.Base64)
+	_, err = helper.RunTransformations(&img, input)
 	if err != nil {
 		return "", err
 	}

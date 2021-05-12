@@ -143,16 +143,16 @@
         }
 
         const scale = document.getElementById("scale").value
-        const rotate = document.getElementById("scale").value
-        const blur = document.getElementById("scale").value
+        const rotate = document.getElementById("rotate").value
+        const blur = document.getElementById("blur").value
         if (scale) {
-            str += `scale: scale,\n`
+            str += `scale: ${scale},\n`
         }
         if (rotate) {
-            str += `rotate: rotate,\n`
+            str += `rotate: ${rotate},\n`
         }
         if (blur) {
-            str += `blur: blur,\n`
+            str += `blur: ${blur},\n`
         }
         return str
     }

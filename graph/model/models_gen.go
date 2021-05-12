@@ -21,9 +21,9 @@ type ImageJSONInput struct {
 }
 
 type ImageOptions struct {
-	Blur      *string `json:"blur"`
-	Scale     *string `json:"scale"`
-	Grayscale *bool   `json:"grayscale"`
-	Invert    *bool   `json:"invert"`
-	Rotate    *string `json:"rotate"`
+	Blur      *float64 `json:"blur"`
+	Scale     *float64 `json:"scale"`
+	Grayscale *bool    `json:"grayscale"`
+	Invert    *bool    `json:"invert"`
+	Rotate    *float64 `json:"rotate"`
 }
