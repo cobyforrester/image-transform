@@ -60,16 +60,36 @@
     }
 
     const sendRequest = async () => {
+        const input = `{
+            image: {
+                base64: "${srcData}",
+                type: "png",
+                options: {
+                    tint: true
+                }
+            }
+        }`
         const body = JSON.stringify({
             query: `
-            mutation transformImage {
-                transformImage(input:{image:"${srcData}", tint:true}) 
-                    }
+            mutation transformJsonImage {
+                transformJsonImage(input: ${input}) 
+            }
             `,
             variables: {
             now: new Date().toISOString(),
             },
         })
+        // const input = {image: srcData, tint:true}
+        // const body = JSON.stringify({
+        //     query: `
+        //     mutation transformImage {
+        //         transformImage(input:{image:"${srcData}", tint:true}) 
+        //     }
+        //     `,
+        //     variables: {
+        //     now: new Date().toISOString(),
+        //     },
+        // })
         const payload = {
             method: 'POST',
             headers: {
@@ -79,7 +99,7 @@
         }
         const res = await fetch('http://localhost:8081/query', payload)
         const data = await res.json()
-        newSrcData = await data.data.transformImage
+        newSrcData = await data.data.transformJsonImage
 
     }
 

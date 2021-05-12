@@ -9,6 +9,7 @@ import (
 
 	"github.com/cobyforrester/image-transform/graph/generated"
 	"github.com/cobyforrester/image-transform/graph/model"
+	"github.com/cobyforrester/image-transform/helper"
 	scalars "github.com/cobyforrester/image-transform/schema"
 )
 
@@ -20,8 +21,16 @@ func (r *mutationResolver) TransformImage(ctx context.Context, input model.Image
 }
 
 func (r *mutationResolver) TransformJSONImage(ctx context.Context, input model.ImageJSONInput) (string, error) {
-	fmt.Println(input)
-	return "String", nil
+	image, err := helper.B64ToImage(input.Image.Base64)
+	if err != nil {
+		return "", err
+	}
+
+	encodedStr, err := helper.ImageToB64(image)
+	if err != nil {
+		return "", err
+	}
+	return encodedStr, nil
 }
 
 func (r *queryResolver) Image(ctx context.Context) (*scalars.Image, error) {
