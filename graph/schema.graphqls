@@ -1,14 +1,28 @@
 scalar Image
 
+type Query {
+  image: Image!
+}
+
+input ImageJSON {
+  base64: String!
+  type: String!
+  options: ImageOptions!
+}
+input ImageOptions {
+  tint: Boolean
+}
+
 input ImageInstructions {
   image: Image!
   tint: Boolean
 }
 
-type Query {
-  image: Image!
+input ImageJSONInput {
+  image: ImageJSON!
 }
 
 type Mutation {
-  transformImage(input: ImageInstructions): Image
+  transformImage(input: ImageInstructions!): Image!
+  transformJsonImage(input: ImageJSONInput!): String!
 }

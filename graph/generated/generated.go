@@ -45,7 +45,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		TransformImage func(childComplexity int, input *model.ImageInstructions) int
+		TransformImage     func(childComplexity int, input model.ImageInstructions) int
+		TransformJSONImage func(childComplexity int, input model.ImageJSONInput) int
 	}
 
 	Query struct {
@@ -54,7 +55,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	TransformImage(ctx context.Context, input *model.ImageInstructions) (*scalars.Image, error)
+	TransformImage(ctx context.Context, input model.ImageInstructions) (*scalars.Image, error)
+	TransformJSONImage(ctx context.Context, input model.ImageJSONInput) (string, error)
 }
 type QueryResolver interface {
 	Image(ctx context.Context) (*scalars.Image, error)
@@ -85,7 +87,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.TransformImage(childComplexity, args["input"].(*model.ImageInstructions)), true
+		return e.complexity.Mutation.TransformImage(childComplexity, args["input"].(model.ImageInstructions)), true
+
+	case "Mutation.transformJsonImage":
+		if e.complexity.Mutation.TransformJSONImage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_transformJsonImage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TransformJSONImage(childComplexity, args["input"].(model.ImageJSONInput)), true
 
 	case "Query.image":
 		if e.complexity.Query.Image == nil {
@@ -160,17 +174,31 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `scalar Image
 
+type Query {
+  image: Image!
+}
+
+input ImageJSON {
+  base64: String!
+  type: String!
+  options: ImageOptions!
+}
+input ImageOptions {
+  tint: Boolean
+}
+
 input ImageInstructions {
   image: Image!
   tint: Boolean
 }
 
-type Query {
-  image: Image!
+input ImageJSONInput {
+  image: ImageJSON!
 }
 
 type Mutation {
-  transformImage(input: ImageInstructions): Image
+  transformImage(input: ImageInstructions!): Image!
+  transformJsonImage(input: ImageJSONInput!): String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -182,10 +210,25 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_transformImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.ImageInstructions
+	var arg0 model.ImageInstructions
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOImageInstructions2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋgraphᚋmodelᚐImageInstructions(ctx, tmp)
+		arg0, err = ec.unmarshalNImageInstructions2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageInstructions(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_transformJsonImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ImageJSONInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNImageJSONInput2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageJSONInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -272,18 +315,63 @@ func (ec *executionContext) _Mutation_transformImage(ctx context.Context, field 
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TransformImage(rctx, args["input"].(*model.ImageInstructions))
+		return ec.resolvers.Mutation().TransformImage(rctx, args["input"].(model.ImageInstructions))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*scalars.Image)
 	fc.Result = res
-	return ec.marshalOImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_transformJsonImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_transformJsonImage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TransformJSONImage(rctx, args["input"].(model.ImageJSONInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_image(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -318,7 +406,7 @@ func (ec *executionContext) _Query_image(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*scalars.Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1489,10 +1577,86 @@ func (ec *executionContext) unmarshalInputImageInstructions(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
-			it.Image, err = ec.unmarshalNImage2githubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx, v)
+			it.Image, err = ec.unmarshalNImage2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx, v)
 			if err != nil {
 				return it, err
 			}
+		case "tint":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tint"))
+			it.Tint, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageJSON(ctx context.Context, obj interface{}) (model.ImageJSON, error) {
+	var it model.ImageJSON
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "base64":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("base64"))
+			it.Base64, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "options":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("options"))
+			it.Options, err = ec.unmarshalNImageOptions2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageOptions(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageJSONInput(ctx context.Context, obj interface{}) (model.ImageJSONInput, error) {
+	var it model.ImageJSONInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "image":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+			it.Image, err = ec.unmarshalNImageJSON2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageJSON(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageOptions(ctx context.Context, obj interface{}) (model.ImageOptions, error) {
+	var it model.ImageOptions
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
 		case "tint":
 			var err error
 
@@ -1532,6 +1696,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "transformImage":
 			out.Values[i] = ec._Mutation_transformImage(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "transformJsonImage":
+			out.Values[i] = ec._Mutation_transformJsonImage(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -1847,23 +2019,23 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNImage2githubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, v interface{}) (scalars.Image, error) {
+func (ec *executionContext) unmarshalNImage2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx context.Context, v interface{}) (scalars.Image, error) {
 	var res scalars.Image
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNImage2githubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, sel ast.SelectionSet, v scalars.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx context.Context, sel ast.SelectionSet, v scalars.Image) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, v interface{}) (*scalars.Image, error) {
+func (ec *executionContext) unmarshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx context.Context, v interface{}) (*scalars.Image, error) {
 	var res = new(scalars.Image)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, sel ast.SelectionSet, v *scalars.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx context.Context, sel ast.SelectionSet, v *scalars.Image) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -1871,6 +2043,26 @@ func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋserv
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) unmarshalNImageInstructions2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageInstructions(ctx context.Context, v interface{}) (model.ImageInstructions, error) {
+	res, err := ec.unmarshalInputImageInstructions(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageJSON2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageJSON(ctx context.Context, v interface{}) (*model.ImageJSON, error) {
+	res, err := ec.unmarshalInputImageJSON(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageJSONInput2githubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageJSONInput(ctx context.Context, v interface{}) (model.ImageJSONInput, error) {
+	res, err := ec.unmarshalInputImageJSONInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNImageOptions2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋgraphᚋmodelᚐImageOptions(ctx context.Context, v interface{}) (*model.ImageOptions, error) {
+	res, err := ec.unmarshalInputImageOptions(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2139,30 +2331,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
-}
-
-func (ec *executionContext) unmarshalOImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, v interface{}) (*scalars.Image, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(scalars.Image)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOImage2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋschemaᚐImage(ctx context.Context, sel ast.SelectionSet, v *scalars.Image) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
-}
-
-func (ec *executionContext) unmarshalOImageInstructions2ᚖgithubᚗcomᚋcobyforresterᚋserveᚑexampleᚋgraphᚋmodelᚐImageInstructions(ctx context.Context, v interface{}) (*model.ImageInstructions, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputImageInstructions(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

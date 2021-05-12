@@ -10,3 +10,17 @@ type ImageInstructions struct {
 	Image scalars.Image `json:"image"`
 	Tint  *bool         `json:"tint"`
 }
+
+type ImageJSON struct {
+	Base64  string        `json:"base64"`
+	Type    string        `json:"type"`
+	Options *ImageOptions `json:"options"`
+}
+
+type ImageJSONInput struct {
+	Image *ImageJSON `json:"image"`
+}
+
+type ImageOptions struct {
+	Tint *bool `json:"tint"`
+}

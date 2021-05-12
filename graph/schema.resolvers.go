@@ -12,11 +12,16 @@ import (
 	scalars "github.com/cobyforrester/image-transform/schema"
 )
 
-func (r *mutationResolver) TransformImage(ctx context.Context, input *model.ImageInstructions) (*scalars.Image, error) {
+func (r *mutationResolver) TransformImage(ctx context.Context, input model.ImageInstructions) (*scalars.Image, error) {
 	image := input.Image
 	// fmt.Println(image.Image)
 
 	return &image, nil
+}
+
+func (r *mutationResolver) TransformJSONImage(ctx context.Context, input model.ImageJSONInput) (string, error) {
+	fmt.Println(input)
+	return "String", nil
 }
 
 func (r *queryResolver) Image(ctx context.Context) (*scalars.Image, error) {
