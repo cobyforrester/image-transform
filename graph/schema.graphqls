@@ -1,4 +1,5 @@
 scalar Image
+scalar Int64
 
 type Query {
   image: Image!
@@ -27,5 +28,5 @@ input ImageJSONInput {
 
 type Mutation {
   transformImage(input: ImageInstructions!): Image!
-  transformJsonImage(input: ImageJSONInput!): String!
+  transformJSONImage(input: ImageJSONInput!): String!
 }

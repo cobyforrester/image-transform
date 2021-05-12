@@ -13,7 +13,6 @@ type ImageInstructions struct {
 
 type ImageJSON struct {
 	Base64  string        `json:"base64"`
-	Type    string        `json:"type"`
 	Options *ImageOptions `json:"options"`
 }
 
@@ -22,5 +21,9 @@ type ImageJSONInput struct {
 }
 
 type ImageOptions struct {
-	Tint *bool `json:"tint"`
+	Blur      *string `json:"blur"`
+	Scale     *string `json:"scale"`
+	Grayscale *bool   `json:"grayscale"`
+	Invert    *bool   `json:"invert"`
+	Rotate    *string `json:"rotate"`
 }

@@ -5,18 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        div input {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
-    <input id="inputFileToLoad" type="file" onchange="onChange();" />
+    <div>
+        <input id="inputFileToLoad" type="file" /><br>
+        <label for="rotate">Rotate: </label>
+        <input type="number" id="rotate" name="rotate" placeholder="90(in degrees)"><br>
+
+        <label for="scale">Scale </label>
+        <input type="number" id="scale" name="scale" placeholder="4"><br>
+        
+        <label for="blur">Blur: </label>
+        <input type="number" id="blur" name="blur" placeholder="1.5"><br>
+
+        <label for="invert"> Invert Colors</label>
+        <input type="checkbox" id="invert" name="invert"><br>
+        <label for="grayscale"> GrayScale</label>
+
+        <input type="checkbox" id="grayscale" name="grayscale"><br><br>
+        <input type="submit" value="Submit" onclick="onSubmit();">
+    </div> 
     <div id="imgTest"></div>
 </body>
 <script>
     let srcData = null
     let newSrcData = null
-    const onChange = () => {
+    const onSubmit = () => {
         srcData = null
         newSrcData = null
-        encodeImageFileAsURL()
+        if (encodeImageFileAsURL()) return
         loadGQL()
         loadGQLRes()
     }
@@ -27,7 +49,7 @@
             if (srcData != null) {
                 sendRequest()
                 clearInterval(interval)
-            } else if (c > 100) {
+            } else if (c > 50) {
                 alert("Invalid PNG")
                 clearInterval(interval)
             }
@@ -40,7 +62,7 @@
             if (newSrcData != null) {
                 setImage()
                 clearInterval(interval)
-            } else if (c > 100) {
+            } else if (c > 50) {
                 alert("Invalid PNG")
                 clearInterval(interval)
             }
@@ -56,6 +78,9 @@
                 srcData = fileLoadedEvent.target.result // <--- data: base64
             }
             fileReader.readAsDataURL(fileToLoad)
+        } else {
+            alert('No Image')
+            return true
         }
     }
 
@@ -63,16 +88,15 @@
         const input = `{
             image: {
                 base64: "${srcData}",
-                type: "png",
                 options: {
-                    tint: true
+                   ${buildInput()} 
                 }
             }
         }`
         const body = JSON.stringify({
             query: `
-            mutation transformJsonImage {
-                transformJsonImage(input: ${input}) 
+            mutation transformJSONImage {
+                transformJSONImage(input: ${input}) 
             }
             `,
             variables: {
@@ -99,7 +123,7 @@
         }
         const res = await fetch('http://localhost:8081/query', payload)
         const data = await res.json()
-        newSrcData = await data.data.transformJsonImage
+        newSrcData = await data.data.transformJSONImage
 
     }
 
@@ -107,6 +131,30 @@
         const newImage = document.createElement('img')
         newImage.src = newSrcData
         document.getElementById("imgTest").innerHTML = newImage.outerHTML
+    }
+
+    const buildInput = () => {
+        let str = ""
+        if (document.getElementById("grayscale").checked) {
+            str += `grayscale: true,\n`
+        }
+        if (document.getElementById("invert").checked) {
+            str += `invert: true,\n`
+        }
+
+        const scale = document.getElementById("scale").value
+        const rotate = document.getElementById("scale").value
+        const blur = document.getElementById("scale").value
+        if (scale) {
+            str += `scale: scale,\n`
+        }
+        if (rotate) {
+            str += `rotate: rotate,\n`
+        }
+        if (blur) {
+            str += `blur: blur,\n`
+        }
+        return str
     }
 </script>
 </html>

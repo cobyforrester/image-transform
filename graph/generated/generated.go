@@ -89,12 +89,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.TransformImage(childComplexity, args["input"].(model.ImageInstructions)), true
 
-	case "Mutation.transformJsonImage":
+	case "Mutation.transformJSONImage":
 		if e.complexity.Mutation.TransformJSONImage == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_transformJsonImage_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_transformJSONImage_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
@@ -173,6 +173,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `scalar Image
+scalar Int64
 
 type Query {
   image: Image!
@@ -180,11 +181,14 @@ type Query {
 
 input ImageJSON {
   base64: String!
-  type: String!
   options: ImageOptions!
 }
 input ImageOptions {
-  tint: Boolean
+  blur: Int64
+  scale: Int64
+  grayscale: Boolean
+  invert: Boolean
+  rotate: Int64
 }
 
 input ImageInstructions {
@@ -198,7 +202,7 @@ input ImageJSONInput {
 
 type Mutation {
   transformImage(input: ImageInstructions!): Image!
-  transformJsonImage(input: ImageJSONInput!): String!
+  transformJSONImage(input: ImageJSONInput!): String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -222,7 +226,7 @@ func (ec *executionContext) field_Mutation_transformImage_args(ctx context.Conte
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_transformJsonImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_transformJSONImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.ImageJSONInput
@@ -332,7 +336,7 @@ func (ec *executionContext) _Mutation_transformImage(ctx context.Context, field 
 	return ec.marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_transformJsonImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_transformJSONImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -349,7 +353,7 @@ func (ec *executionContext) _Mutation_transformJsonImage(ctx context.Context, fi
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_transformJsonImage_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_transformJSONImage_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1609,14 +1613,6 @@ func (ec *executionContext) unmarshalInputImageJSON(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "type":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			it.Type, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "options":
 			var err error
 
@@ -1657,11 +1653,43 @@ func (ec *executionContext) unmarshalInputImageOptions(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
-		case "tint":
+		case "blur":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tint"))
-			it.Tint, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("blur"))
+			it.Blur, err = ec.unmarshalOInt642ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "scale":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("scale"))
+			it.Scale, err = ec.unmarshalOInt642ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "grayscale":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("grayscale"))
+			it.Grayscale, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "invert":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("invert"))
+			it.Invert, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "rotate":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rotate"))
+			it.Rotate, err = ec.unmarshalOInt642ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1699,8 +1727,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "transformJsonImage":
-			out.Values[i] = ec._Mutation_transformJsonImage(ctx, field)
+		case "transformJSONImage":
+			out.Values[i] = ec._Mutation_transformJSONImage(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2331,6 +2359,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOInt642ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt642ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalString(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
