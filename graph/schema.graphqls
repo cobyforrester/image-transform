@@ -1,14 +1,16 @@
 scalar Image
 
-type Query {
-  image: Image!
-}
-
+# First attempt, used an image scalar, not sure why 
 input ImageInstructions {
   image: Image!
   tint: Boolean
 }
 
+input ImageJSONInput {
+  image: ImageJSON!
+}
+
+# Better implementation, one used by frontend
 input ImageJSON {
   base64: String!
   options: ImageOptions!
@@ -21,9 +23,6 @@ input ImageOptions {
   rotate: Float
 }
 
-input ImageJSONInput {
-  image: ImageJSON!
-}
 
 type Mutation {
   transformImage(input: ImageInstructions!): Image!

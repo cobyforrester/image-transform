@@ -8,7 +8,6 @@ import (
 	"errors"
 	"strconv"
 	"sync"
-	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -37,7 +36,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
-	Query() QueryResolver
 }
 
 type DirectiveRoot struct {
@@ -50,16 +48,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Image func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	TransformImage(ctx context.Context, input model.ImageInstructions) (*scalars.Image, error)
 	TransformJSONImage(ctx context.Context, input model.ImageJSONInput) (string, error)
-}
-type QueryResolver interface {
-	Image(ctx context.Context) (*scalars.Image, error)
 }
 
 type executableSchema struct {
@@ -100,13 +94,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TransformJSONImage(childComplexity, args["input"].(model.ImageJSONInput)), true
-
-	case "Query.image":
-		if e.complexity.Query.Image == nil {
-			break
-		}
-
-		return e.complexity.Query.Image(childComplexity), true
 
 	}
 	return 0, false
@@ -174,15 +161,17 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `scalar Image
 
-type Query {
-  image: Image!
-}
-
+# First attempt, used an image scalar, not sure why 
 input ImageInstructions {
   image: Image!
   tint: Boolean
 }
 
+input ImageJSONInput {
+  image: ImageJSON!
+}
+
+# Better implementation, one used by frontend
 input ImageJSON {
   base64: String!
   options: ImageOptions!
@@ -195,9 +184,6 @@ input ImageOptions {
   rotate: Float
 }
 
-input ImageJSONInput {
-  image: ImageJSON!
-}
 
 type Mutation {
   transformImage(input: ImageInstructions!): Image!
@@ -375,41 +361,6 @@ func (ec *executionContext) _Mutation_transformJSONImage(ctx context.Context, fi
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_image(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Image(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*scalars.Image)
-	fc.Result = res
-	return ec.marshalNImage2ᚖgithubᚗcomᚋcobyforresterᚋimageᚑtransformᚋschemaᚐImage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1757,20 +1708,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "image":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_image(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":

@@ -9,6 +9,14 @@
         div input {
             margin: 5px 0;
         }
+        .img-container {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: space;
+        }
+        .img-container img {
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -30,7 +38,16 @@
         <input type="checkbox" id="grayscale" name="grayscale"><br><br>
         <input type="submit" value="Submit" onclick="onSubmit();">
     </div> 
-    <div id="imgTest"></div>
+    <div class="img-container">
+        <div>
+            <h1>Original</h1>
+            <div id="imgSample"></div>
+        </div>
+        <div>
+            <h1>Transformed</h1>
+            <div id="imgTransform"></div>
+        </div>
+    </div>
 </body>
 <script>
     let srcData = null
@@ -76,6 +93,9 @@
 
             fileReader.onload = function(fileLoadedEvent) {
                 srcData = fileLoadedEvent.target.result // <--- data: base64
+                const newImage = document.createElement('img')
+                newImage.src = fileLoadedEvent.target.result
+                document.getElementById("imgSample").innerHTML = newImage.outerHTML
             }
             fileReader.readAsDataURL(fileToLoad)
         } else {
@@ -130,7 +150,7 @@
     const setImage = () => {
         const newImage = document.createElement('img')
         newImage.src = newSrcData
-        document.getElementById("imgTest").innerHTML = newImage.outerHTML
+        document.getElementById("imgTransform").innerHTML = newImage.outerHTML
     }
 
     const buildInput = () => {
