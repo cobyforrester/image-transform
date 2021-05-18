@@ -18,6 +18,7 @@ import (
 const defaultPort = "8081"
 
 func main() {
+	// to build for AWS: GOOS=linux GOARXH=amd64 go build -o bin/application
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
