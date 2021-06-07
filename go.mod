@@ -4,6 +4,9 @@ go 1.15
 
 require (
 	github.com/99designs/gqlgen v0.13.0
+	github.com/apex/gateway v1.1.2 // indirect
+	github.com/aws/aws-lambda-go v1.24.0 // indirect
+	github.com/awslabs/aws-lambda-go-api-proxy v0.10.0 // indirect
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/google/uuid v1.2.0

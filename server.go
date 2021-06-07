@@ -4,58 +4,36 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/transport"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/cobyforrester/image-transform/graph"
-	"github.com/cobyforrester/image-transform/graph/generated"
+	"github.com/apex/gateway"
 	"github.com/go-chi/chi"
-	"github.com/gorilla/websocket"
-	"github.com/rs/cors"
 )
 
-const defaultPort = "8081"
+const defaultPort = "7010"
+
+var router *chi.Mux
+var err error
+
+func init() {
+	router, err = MakeRouter()
+	if err != nil {
+		panic("Router Error")
+	}
+}
 
 func main() {
-	// to build for AWS: GOOS=linux GOARXH=amd64 go build -o bin/application
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
+	isRunningAtLambda := strings.Contains(os.Getenv("AWS_EXECUTION_ENV"), "AWS_Lambda_")
 
-	router := chi.NewRouter()
+	if isRunningAtLambda {
+		log.Fatal(gateway.ListenAndServe(":3000", router))
+	} else {
+		port := os.Getenv("PORT")
 
-	// Add CORS middleware around every request
-	// See https://github.com/rs/cors for full option listing
-	router.Use(cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		// AllowOriginFunc:  func(origin string) bool { return true },
-		AllowedMethods:   []string{},
-		AllowedHeaders:   []string{},
-		AllowCredentials: true,
-		Debug:            true,
-	}).Handler)
-
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-
-	srv.AddTransport(&transport.Websocket{
-		Upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				// Check against your desired domains here
-				return r.Host == "localhost:8081"
-			},
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		},
-	})
-
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	err := http.ListenAndServe(":"+port, router)
-	if err != nil {
-		panic(err)
+		if port == "" {
+			port = defaultPort
+		}
+		log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+		log.Fatal(http.ListenAndServe(":"+port, router))
 	}
 }
